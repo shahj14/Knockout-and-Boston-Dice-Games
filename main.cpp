@@ -125,14 +125,9 @@ class Knockout : public DiceGame{
         //displayScores();
         do {
             int knockoutSum = getSum();
-            cout << "Knockout Sum: " << knockoutSum << endl;
-            cout << "Alive Sum: " << countAlive() << endl;
-            displayScores();
-            //cout << getSum() << endl;
-            //cout << getSum() << endl;
              for (int i = 0; i < numPlayers; i++) {
-                //players[i]->setScore(getSum());
-                if (getSum() == knockoutSum) {
+                int x = getSum();
+                if (x == knockoutSum and countAlive() > 1) {
                     players[i]->setAlive(false);
                 }
                 if(players[i]->getAlive() == true){
@@ -141,9 +136,8 @@ class Knockout : public DiceGame{
             }
             //cout << countAlive();
         }while(countAlive() > 1);
-        getWinner();
         displayScores();
-        //cout << getWinner()->getName();// << " : " << getWinner()->getScore() << endl;
+        printWinner();
     }
     int getSum(){
         int sum = 0;
@@ -160,13 +154,12 @@ class Knockout : public DiceGame{
         }
         return sum;
     }
-    Player* getWinner(){
+    void printWinner(){
         if(countAlive() == 1){
             for(int i = 0; i < numPlayers; i++){
                 if(players[i]->getAlive())
-                    //cout << players[i]->getName() << endl;
+                    cout << players[i]->getName() <<" wins with a score of: " << players[i]->getScore() << endl;
                     //cout << players[i] -> getScore();
-                    return players[i];
             }
         }
     }
