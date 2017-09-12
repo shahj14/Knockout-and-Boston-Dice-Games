@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstdlib>
+#include <vector>
 #include <ctime>
 #include <fstream>
 #include <stdlib.h>
@@ -21,8 +22,8 @@ class Dice{
             numSides = n;
         }
         int roll() {
-            srand(time(0));
-            return random()%numSides + 1;
+            srand((unsigned)time(0));
+            return (random() % numSides) + 1;
         };
         void setNumSides(int n){
             numSides = n;
@@ -130,7 +131,7 @@ class Knockout : public DiceGame{
                 if (x == knockoutSum and countAlive() > 1) {
                     players[i]->setAlive(false);
                 }
-                if(players[i]->getAlive() == true){
+                if(players[i]->getAlive()){
                     players[i]->addToScore(1);
                 }
             }
@@ -159,14 +160,54 @@ class Knockout : public DiceGame{
             for(int i = 0; i < numPlayers; i++){
                 if(players[i]->getAlive())
                     cout << players[i]->getName() <<" wins with a score of: " << players[i]->getScore() << endl;
-                    //cout << players[i] -> getScore();
             }
         }
     }
 };
 
+class BostonGame: public DiceGame{
+    void play(){
+        initPlayers();
+        dice = new Dice(6);
+        int max = 0; string max_name;
+        for(int i = 0; i < numPlayers; i++){
+            players[i]->setScore(getRollSum());
+            if(players[i]->getScore() > max) {
+                max = players[i]->getScore();
+                max_name = players[i]->getName();
+            }
+        }
+
+        cout << max_name << " wins with a score of: " << max <<endl;
+    }
+    int getRollSum(){
+        vector <int> rolls(3);
+        int sum = 0;
+        int set = 3;
+        for (int i = 3; i > 0; i --){
+            for(int k = 0; k < i; k++){
+                rolls[k] = dice->roll();
+                cout << rolls[k] << endl;
+            }
+            //cout << maxVal(rolls);
+            sum += maxVal(rolls,i);
+            cout << "Max: " << maxVal(rolls,i) << endl;
+            cout << "Sum: " << sum << endl;
+        }
+        return sum;
+    }
+    int maxVal(vector<int> arr, int count){
+        int max = 0;
+        for(int i = 0; i < count; i++){
+            if(arr[i] > max)
+                max = arr[i];
+        }
+        return max;
+    }
+};
+
 int main() {
     // Base class pointer
-    DiceGame *game = new Knockout();
+    DiceGame *game = new BostonGame();
     game->play();
 }
