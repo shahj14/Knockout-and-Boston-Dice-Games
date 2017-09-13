@@ -4,6 +4,10 @@
 #include <ctime>
 #include <fstream>
 #include <stdlib.h>
+#include <algorithm>
+#include <cctype>
+#include <locale>
+#include <sstream>
 
 #define MAX_PLAYERS 10
 
@@ -117,12 +121,51 @@ class DiceGame{
             cin >> numSides;
             dice = new Dice(numSides);
         }
+        void writeScorestoFile(){
+            ofstream myfile ("/Users/Jeet/CLionProjects/Lab3/score.txt", fstream::app);
+            string line1;
+            string line2;
+            if (myfile.is_open()){
+                for(int i = 0; i < numPlayers; i++){
+                    line1 = players[i]->getName();
+                    line2 = to_string(players[i]->getScore());
+                    myfile << line1 << " : " << line2 << endl;
+                }
+            }
+        }
+        void getHighestScore(){
+            string line;
+            int score;
+            int max = 0;
+            string max_name = "";
+            string a,b,c,name;
+            ifstream myfile ("/Users/Jeet/CLionProjects/Lab3/score.txt");
+            if (myfile.is_open())
+            {
+                while ( getline (myfile,line) )
+                {
+                    //trim(line);
+                    stringstream ss(line);
+                    ss >>name >> b >> score; //b holds the ":"
+
+                    if(score > max) {
+                        max = score;
+                        max_name  = name;
+                    }
+                }
+                myfile.close();
+            }
+            else cout << "Unable to open file";
+
+            cout << max_name << " : " << max << endl;
+
+        }
 
 };
 class Knockout : public DiceGame{
     void play(){
-        initPlayers();
-        requestDice();
+        //initPlayers();
+        //requestDice();
         //displayScores();
         do {
             int knockoutSum = getSum();
@@ -167,8 +210,8 @@ class Knockout : public DiceGame{
 
 class BostonGame: public DiceGame{
     void play(){
-        initPlayers();
-        dice = new Dice(6);
+        //initPlayers();
+        //requestDice();
         int max = 0; string max_name;
         for(int i = 0; i < numPlayers; i++){
             players[i]->setScore(getRollSum());
@@ -177,22 +220,22 @@ class BostonGame: public DiceGame{
                 max_name = players[i]->getName();
             }
         }
-
+        displayScores();
+        cout << "_____High Score_____";
         cout << max_name << " wins with a score of: " << max <<endl;
     }
     int getRollSum(){
-        vector <int> rolls(3);
+        vector <int> rolls(numDice);
         int sum = 0;
-        int set = 3;
-        for (int i = 3; i > 0; i --){
+        for (int i = numDice; i > 0; i --){
             for(int k = 0; k < i; k++){
                 rolls[k] = dice->roll();
-                cout << rolls[k] << endl;
+                //cout << rolls[k] << endl;
             }
             //cout << maxVal(rolls);
             sum += maxVal(rolls,i);
-            cout << "Max: " << maxVal(rolls,i) << endl;
-            cout << "Sum: " << sum << endl;
+            //cout << "Max: " << maxVal(rolls,i) << endl;
+            //cout << "Sum: " << sum << endl;
         }
         return sum;
     }
@@ -209,5 +252,9 @@ class BostonGame: public DiceGame{
 int main() {
     // Base class pointer
     DiceGame *game = new BostonGame();
+    game->initPlayers();
+    game->requestDice();
     game->play();
+    game->writeScorestoFile();
+    game->getHighestScore();
 }
