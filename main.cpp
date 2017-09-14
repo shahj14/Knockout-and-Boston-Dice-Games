@@ -25,13 +25,10 @@ class Dice{
         Dice(int n){
             numSides = n;
         }
-        int roll() {
+        int roll() { //randomized roll based on sides
             srand((unsigned)time(0));
             return (random() % numSides) + 1;
         };
-        void setNumSides(int n){
-            numSides = n;
-        }
 };
 
 /*
@@ -41,14 +38,14 @@ class Player{
     private:
         string name;
         int score;
-        bool alive;
+        bool alive; //variable for tracking alive status for Knockout
     public:
-        Player(){
+        Player(){ //Constructor for adding a player
             name = "";
             score = 0;
             alive = true;
         }
-        Player(string n, int s){
+        Player(string n, int s){ //Constructor with parameters
             name = n;
             score = s;
             alive = true;
@@ -74,7 +71,7 @@ class Player{
         void setAlive(bool status){
             alive = status;
         }
-        bool getAlive(){
+        bool getAlive(){ //check for if player is alive
             return alive;
         }
 };
@@ -93,6 +90,7 @@ class DiceGame{
         //	Pure virtual function
         virtual void play() = 0;
 
+        //Get input for all players from the user
         void initPlayers(){
             do {
                 cout << "Enter number of players: ";
@@ -108,11 +106,14 @@ class DiceGame{
             }
         }
 
+        //Format and output all scores
         void displayScores(){
             for(int i = 0; i < numPlayers; i++){
                 cout << players[i]->getName() << " : " << players[i]->getScore() << endl;
             }
         }
+
+        //Allow user to enter number of dice and number of sides
         void requestDice(){
             int numSides;
             cout << "How many dice? : ";
@@ -121,28 +122,32 @@ class DiceGame{
             cin >> numSides;
             dice = new Dice(numSides);
         }
+
+        //Write all scores to a file for use in the high score
         void writeScorestoFile(){
-            ofstream myfile ("/Users/Jeet/CLionProjects/Lab3/score.txt", fstream::app);
+            ofstream myfile ("score.txt", fstream::app);
             string line1;
             string line2;
             if (myfile.is_open()){
-                for(int i = 0; i < numPlayers; i++){
+                for(int i = 0; i < numPlayers; i++){ //write to the file
                     line1 = players[i]->getName();
                     line2 = to_string(players[i]->getScore());
                     myfile << line1 << " : " << line2 << endl;
                 }
             }
         }
+
+        //Loop through text file for highest player score
         void getHighestScore(){
             string line;
             int score;
             int max = 0;
-            string max_name = "";
+            string max_name;
             string a,b,c,name;
-            ifstream myfile ("/Users/Jeet/CLionProjects/Lab3/score.txt");
+            ifstream myfile ("score.txt");
             if (myfile.is_open())
             {
-                while ( getline (myfile,line) )
+                while ( getline (myfile,line) )//read file
                 {
                     //trim(line);
                     stringstream ss(line);
@@ -157,6 +162,7 @@ class DiceGame{
             }
             else cout << "Unable to open file";
 
+            cout << "___High Score___" << endl;
             cout << max_name << " : " << max << endl;
 
         }
@@ -164,9 +170,7 @@ class DiceGame{
 };
 class Knockout : public DiceGame{
     void play(){
-        //initPlayers();
-        //requestDice();
-        //displayScores();
+
         do {
             int knockoutSum = getSum();
              for (int i = 0; i < numPlayers; i++) {
@@ -183,14 +187,14 @@ class Knockout : public DiceGame{
         displayScores();
         printWinner();
     }
-    int getSum(){
+    int getSum(){ //get sum of all dice rolls
         int sum = 0;
         for(int i = 0; i < numDice; i ++){
             sum += dice->roll();
         }
         return sum;
     }
-    int countAlive(){
+    int countAlive(){ //count the number of true in bool alive
         int sum =0;
         for(int i = 0; i < numPlayers; i++){
             if(players[i]->getAlive())
@@ -198,7 +202,7 @@ class Knockout : public DiceGame{
         }
         return sum;
     }
-    void printWinner(){
+    void printWinner(){ //only works when alive count is 1
         if(countAlive() == 1){
             for(int i = 0; i < numPlayers; i++){
                 if(players[i]->getAlive())
@@ -210,8 +214,7 @@ class Knockout : public DiceGame{
 
 class BostonGame: public DiceGame{
     void play(){
-        //initPlayers();
-        //requestDice();
+
         int max = 0; string max_name;
         for(int i = 0; i < numPlayers; i++){
             players[i]->setScore(getRollSum());
@@ -221,9 +224,10 @@ class BostonGame: public DiceGame{
             }
         }
         displayScores();
-        cout << "_____High Score_____";
         cout << max_name << " wins with a score of: " << max <<endl;
     }
+    //this function loops through the dice and adds the sum while saving the highest of each roll
+    //Ex. 3 dice would be rolled, highest saved, then 2 rolled, and so on
     int getRollSum(){
         vector <int> rolls(numDice);
         int sum = 0;
@@ -234,11 +238,11 @@ class BostonGame: public DiceGame{
             }
             //cout << maxVal(rolls);
             sum += maxVal(rolls,i);
-            //cout << "Max: " << maxVal(rolls,i) << endl;
-            //cout << "Sum: " << sum << endl;
+
         }
         return sum;
     }
+    //simulates a max function for determining highest dice
     int maxVal(vector<int> arr, int count){
         int max = 0;
         for(int i = 0; i < count; i++){
@@ -251,10 +255,36 @@ class BostonGame: public DiceGame{
 
 int main() {
     // Base class pointer
-    DiceGame *game = new BostonGame();
-    game->initPlayers();
-    game->requestDice();
-    game->play();
-    game->writeScorestoFile();
-    game->getHighestScore();
+    int choice;
+    char ans;
+    DiceGame *game;
+    //Play Again Loop
+    do {
+        //Input Loop
+        do {
+            cout << "Which game would you like to play" << endl
+                 << "1 - Knockout" << endl
+                 << "2 - Boston Game" << endl;
+            cout << "Enter Choice: ";
+            cin >> choice;
+        } while (choice != 1 && choice != 2);
+
+        //Game Initialization
+        if (choice == 1) {
+            game = new Knockout();
+            cout << "____Knockout_____" << endl;
+        } else {
+            game = new BostonGame();
+            cout << "____Boston Dice_____" << endl;
+
+        }
+        game->initPlayers();
+        game->requestDice();
+        game->play();
+        game->writeScorestoFile();
+        game->getHighestScore();
+
+        cout << "Enter Y to play again: ";
+        cin >> ans;
+    }while( ans == 'y' || ans == 'Y');
 }
